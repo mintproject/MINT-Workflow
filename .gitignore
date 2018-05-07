@@ -1,0 +1,9 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+
+workflow/dax.xml
+workflow/sites.xml
+workflow/tc.data
+

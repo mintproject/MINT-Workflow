@@ -8,6 +8,14 @@ cont PIHM_Docker {
     image "docker://lucasaugustomcc/pihm"
 }
 
+tr PIHM-configure.sh {
+    site condor_pool {
+        type "STAGEABLE"
+        container "PIHM_Docker"
+        pfn "file://$PWD/PIHM/PIHM-configure.sh"
+    }
+}
+
 tr PIHM-wrapper.sh {
     site condor_pool {
         type "STAGEABLE"
@@ -16,10 +24,10 @@ tr PIHM-wrapper.sh {
     }
 }
 
-tr Cycles-prepare-inputs.sh {
+tr Cycles-configure.sh {
     site condor_pool {
         type "STAGEABLE"
-        pfn "file://$PWD/Cycles/Cycles-prepare-inputs.sh"
+        pfn "file://$PWD/Cycles/Cycles-configure.sh"
     }
 }
 
@@ -29,6 +37,34 @@ tr Cycles-wrapper.sh {
         pfn "file://$PWD/Cycles/Cycles-wrapper.sh"
     }
 }
+
+tr LDAS.sh {
+    site condor_pool {
+        type "STAGEABLE"
+        pfn "file://$PWD/weather/LDAS.sh"
+    }
+} 
+
+tr LDAS-Cycles-transformation.sh {
+    site condor_pool {
+        type "STAGEABLE"
+        pfn "file://$PWD/transformations/LDAS-Cycles-transformation.sh"
+    }
+} 
+
+tr LDAS-PIHM-transformation.sh {
+    site condor_pool {
+        type "STAGEABLE"
+        pfn "file://$PWD/transformations/LDAS-PIHM-transformation.sh"
+    }
+} 
+
+tr PIHM-Cycles-transformation.sh {
+    site condor_pool {
+        type "STAGEABLE"
+        pfn "file://$PWD/transformations/PIHM-Cycles-transformation.sh"
+    }
+} 
 
 EOF
 

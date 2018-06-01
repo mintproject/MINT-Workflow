@@ -12,10 +12,10 @@ export RUN_DIR=/local-scratch/$USER/workflow/$RUN_ID
 mkdir -p $RUN_DIR
 
 # create a site catalog from the template
-envsubst < workflow/sites.template.xml > workflow/sites.xml
+envsubst < workflow/sites.template.xml > workflow/generated/sites.xml
 
 # generate a transformation catalog
-./workflow/tc-generator.sh >workflow/tc.data
+./workflow/tc-generator.sh >workflow/generated/tc.data
 
 # generate the workflow
 ./workflow/dax-generator.py
@@ -28,7 +28,7 @@ pegasus-plan \
     --cleanup inplace \
     --relative-dir $RUN_ID \
     --dir $RUN_DIR \
-    --dax workflow/dax.xml \
+    --dax workflow/generated/dax.xml \
     --submit
 
 

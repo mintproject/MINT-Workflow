@@ -6,4 +6,5 @@ __pycache__/
 workflow/dax.xml
 workflow/sites.xml
 workflow/tc.data
+workflow/generated
 

@@ -13,64 +13,92 @@ top_dir = os.getcwd()
 dax = ADAG('MINT')
 
 # email notifications
-dax.invoke('all', '/usr/share/pegasus/notification/email')
+dax.invoke('all', top_dir + '/workflow/generate-graphs.sh')
 
 inputs = []
 
-# need the real Cycles binary
+# weather data
+ldas = Job('LDAS.sh')
+weather_data = File('weather.data')
+ldas.uses(weather_data, link=Link.OUTPUT, transfer=False)
+dax.addJob(ldas)
+
+# configure PIHM
+pihm_configure = Job('PIHM-configure.sh')
+pihm_config = File('PIHM-config.tar.gz')
+pihm_configure.uses(pihm_config, link=Link.OUTPUT, transfer=False)
+dax.addJob(pihm_configure)
+
+# transformation: LDAS->PIHM
+ldas_pihm = Job('LDAS-PIHM-transformation.sh')
+ldas_pihm.uses(weather_data, link=Link.INPUT)
+pihm_forcing = File('pihm.forc')
+ldas_pihm.uses(pihm_forcing, link=Link.OUTPUT, transfer=False)
+dax.addJob(ldas_pihm)
+dax.depends(parent=ldas, child=ldas_pihm)
+dax.depends(parent=pihm_configure, child=ldas_pihm)
+
+# PIHM
+pihm = Job('PIHM-wrapper.sh')
+pihm.uses(pihm_config, link=Link.INPUT)
+pihm.uses(pihm_forcing, link=Link.INPUT)
+# output is a tarball of the state
+pihm_state = File('PIHM-state.tar.gz')
+pihm.uses(pihm_state, link=Link.OUTPUT, transfer=True)
+dax.addJob(pihm)
+dax.depends(parent=pihm_configure, child=pihm)
+dax.depends(parent=ldas_pihm, child=pihm)
+   
+# need the real Cycles binary - will probably be a Docker image in the future
 cycles_binary = File('Cycles')
 cycles_binary.addPFN(PFN('file://' + top_dir + '/Cycles/Cycles', 'local'))
 dax.addFile(cycles_binary)
 
-# Cycles inputs (set of files) - temporary until we have a transform
-for fname in glob.glob('Cycles/input/*'):
-    # do not include inputs/ part in the lfn
-    fname = re.sub('Cycles/input/', '', fname)
-    f = File(fname)
-    f.addPFN(PFN('file://' + top_dir + '/Cycles/input/' + fname, 'local'))
-    dax.addFile(f)
-    inputs.append(f)
+# fake points for now - we only have one real one
+for point in ['one', 'two', 'three']:
 
-# create a job to execute PIHM
-pihm_job = Job('PIHM-wrapper.sh')
-# sample input set
-for fname in glob.glob('PIHM/input/*'):
-    fname = re.sub('PIHM/input/', '', fname)
-    f = File(fname)
-    f.addPFN(PFN('file://' + top_dir + '/PIHM/input/' + fname, 'local'))
-    dax.addFile(f)
-    pihm_job.uses(f, link=Link.INPUT)
-# output is a tarball of the state
-pihm_state = File('PIHM-state.tar.gz')
-pihm_job.uses(pihm_state, link=Link.OUTPUT, transfer=True)
-dax.addJob(pihm_job)
-
-for point in ['ContinuousCorn', 'CornSilageSoyWheat', 'CornSoyWheatPasture']:
-
-    # data transform PIHM->Cycles
-    # this is just a placeholder for a real transform
-    prepare_job = Job('Cycles-prepare-inputs.sh')
-    prepare_job.addArguments(point)
-    prepare_job.uses(pihm_state, link=Link.INPUT)
-    for f in inputs:
-        prepare_job.uses(f, link=Link.INPUT)
-    cycles_inputs = File('Cycles-%s-inputs.tar.gz' %(point))
-    prepare_job.uses(cycles_inputs, link=Link.OUTPUT, transfer=True)
-    dax.addJob(prepare_job)
-    dax.depends(parent=pihm_job, child=prepare_job)
+    # configure Cycles
+    cycles_configure = Job('Cycles-configure.sh')
+    cycles_config = File('Cycles-config.tar.gz')
+    cycles_configure.uses(cycles_config, link=Link.OUTPUT, transfer=False)
+    dax.addJob(cycles_configure)
+    dax.depends(parent=pihm, child=cycles_configure)
+    
+    # transformation: LDAS->Cycles
+    ldas_cycles = Job('LDAS-Cycles-transformation.sh')
+    ldas_cycles.uses(weather_data, link=Link.INPUT)
+    cycles_forcing = File('cycles-%s.forcing' %(point))
+    ldas_cycles.uses(cycles_forcing, link=Link.OUTPUT, transfer=False)
+    dax.addJob(ldas_cycles)
+    dax.depends(parent=cycles_configure, child=ldas_cycles)
+    dax.depends(parent=ldas, child=ldas_cycles)
+    
+    # transformation: PIHM->Cycles
+    pihm_cycles = Job('PIHM-Cycles-transformation.sh')
+    pihm_cycles.uses(pihm_state, link=Link.INPUT)
+    pihm_cycles.uses(cycles_config, link=Link.INPUT)
+    cycles_reinit = File('cycles-%s.REINIT' %(point))
+    pihm_cycles.uses(cycles_reinit, link=Link.OUTPUT, transfer=False)
+    dax.addJob(pihm_cycles)
+    dax.depends(parent=cycles_configure, child=pihm_cycles)
+    dax.depends(parent=pihm, child=pihm_cycles)
 
     # create a job to execute Cycles
-    cycles_job = Job('Cycles-wrapper.sh')
-    cycles_job.addArguments(point)
-    cycles_job.uses(cycles_binary, link=Link.INPUT)
-    cycles_job.uses(cycles_inputs, link=Link.INPUT)
+    cycles = Job('Cycles-wrapper.sh')
+    cycles.addArguments(point)
+    cycles.uses(cycles_binary, link=Link.INPUT)
+    cycles.uses(cycles_config, link=Link.INPUT)
+    cycles.uses(cycles_forcing, link=Link.INPUT)
+    cycles.uses(cycles_reinit, link=Link.INPUT)
     cycles_outputs = File('Cycles-%s-results.tar.gz' %(point))
-    cycles_job.uses(cycles_outputs, link=Link.OUTPUT, transfer=True)
-    dax.addJob(cycles_job)
-    dax.depends(parent=prepare_job, child=cycles_job)
+    cycles.uses(cycles_outputs, link=Link.OUTPUT, transfer=True)
+    dax.addJob(cycles)
+    dax.depends(parent=cycles_configure, child=cycles)
+    dax.depends(parent=ldas_cycles, child=cycles)
+    dax.depends(parent=pihm_cycles, child=cycles)
 
 # Write the DAX
-f = open('workflow/dax.xml', 'w')
+f = open('workflow/generated/dax.xml', 'w')
 dax.writeXML(f)
 f.close()
 

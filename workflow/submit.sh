@@ -10,6 +10,7 @@ export RUN_ID=cycles-`date +'%s'`
 export RUN_DIR=/local-scratch/$USER/workflow/$RUN_ID
 
 mkdir -p $RUN_DIR
+mkdir -p workflow/generated
 
 # create a site catalog from the template
 envsubst < workflow/sites.template.xml > workflow/generated/sites.xml

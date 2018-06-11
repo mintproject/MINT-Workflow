@@ -8,11 +8,11 @@ cont PIHM_Docker {
     image "docker://lucasaugustomcc/pihm"
 }
 
-tr PIHM-configure.sh {
+tr PIHM-setup.sh {
     site condor_pool {
         type "STAGEABLE"
         container "PIHM_Docker"
-        pfn "file://$PWD/PIHM/PIHM-configure.sh"
+        pfn "file://$PWD/PIHM/PIHM-setup.sh"
     }
 }
 
@@ -24,10 +24,10 @@ tr PIHM-wrapper.sh {
     }
 }
 
-tr Cycles-configure.sh {
+tr Cycles-setup.sh {
     site condor_pool {
         type "STAGEABLE"
-        pfn "file://$PWD/Cycles/Cycles-configure.sh"
+        pfn "file://$PWD/Cycles/Cycles-setup.sh"
     }
 }
 

@@ -2,27 +2,20 @@
 
 set -e
 
-SITE_NAME=$1
+POINT=$1
 
-touch Cycles-${SITE_NAME}-results.tar.gz
+# set up the input directory
+tar xzf Cycles-${POINT}-base.tar.gz 
+mv Cycles-${POINT}-base input
 
-# Cycles wants input files under an input/ dir
-tar xzf Cycles-${SITE_NAME}-inputs.tar.gz 
-
-echo
-echo
-ls -l
-echo
-echo
+# TODO: determine target names
+mv Cycles-${POINT}.weather input/SS_x3085y0535_ldas.weather
+mv Cycles-${POINT}.REINIT input/SS_fswc.REINIT
 
 chmod 755 Cycles
-./Cycles $SITE_NAME
+#./Cycles $POINT
+./Cycles SS_sorghum_ry17
 
-#echo
-#for FILE in `ls output/$SITE_NAME/`; do
-#    echo "... moving output to ${SITE_NAME}__${FILE}"
-#    mv output/$SITE_NAME/$FILE ${SITE_NAME}__${FILE}
-#done
-
-tar czf Cycles-${SITE_NAME}-results.tar.gz output
+mv output Cycles-${POINT}-results
+tar czf Cycles-${POINT}-results.tar.gz Cycles-${POINT}-results
 

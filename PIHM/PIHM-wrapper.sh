@@ -2,10 +2,16 @@
 
 set -e
 
-touch PIHM-state.tar.gz
+tar xzf PIHM-base.tar.gz
 
-PROJECT_NAME=`cat projectName.txt`
+# detemin the project name
+cd PIHM-base
+PROJECT_NAME=`ls *.mesh | sed 's;\.mesh;;'`
 echo "Setting up PIHM to run project '$PROJECT_NAME'..."
+echo "$PROJECT_NAME" >projectName.txt
+
+# copy the forcing data into place
+cp ../pihm.forc ${PROJECT_NAME}.forc
 
 echo
 echo
@@ -13,5 +19,7 @@ echo
 echo
 echo
 
-tar czf PIHM-state.tar.gz ${PROJECT_NAME}.*
+cd ..
+mv PIHM-base PIHM-state
+tar czf PIHM-state.tar.gz PIHM-state
 

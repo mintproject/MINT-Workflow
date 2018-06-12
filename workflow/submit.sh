@@ -6,7 +6,7 @@ TOP_DIR=`dirname $0`
 TOP_DIR=`cd $TOP_DIR/.. && pwd`
 cd $TOP_DIR
 
-export RUN_ID=cycles-`date +'%s'`
+export RUN_ID=mint-`date +'%s'`
 export RUN_DIR=/local-scratch/$USER/workflow/$RUN_ID
 
 mkdir -p $RUN_DIR

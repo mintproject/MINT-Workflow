@@ -8,4 +8,10 @@ set -e
 
 wget -nv http://workflow.isi.edu/MINT/MINT-Workflow/v2/PIHM-base.tar.gz
 
+tar xzf PIHM-base.tar.gz
+
+# only run for 1 month for testing
+perl -p -i -e 's/5256000/44640/' PIHM-base/ga.para
+
+tar czf PIHM-base.tar.gz PIHM-base
 

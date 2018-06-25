@@ -5,7 +5,7 @@ cat <<EOF
 # Lucas' PIHM image from DockerHub
 cont PIHM_Docker {
     type "docker"
-    image "docker://lucasaugustomcc/pihm"
+    image "docker://mintproject/pihm"
 }
 
 tr PIHM-setup.sh {

@@ -1,0 +1,51 @@
+#!/usr/bin/env python
+
+# user the MINT data catalog to find the correct PIHM_Base
+
+import sys
+import requests
+import json
+
+url = 'http://mint-demo.westus2.cloudapp.azure.com/data_sets'
+params = {'standard_name': 'PIHM_Base'}
+r = requests.get(url, params=params)
+if not r.ok:
+     r.raise_for_status()
+     sys.exit(1)
+
+data = json.loads(r.content)
+
+# TODO: handle multiple hits
+variable_id = None
+for result in data['results']['bindings']:
+    print(json.dumps(result, indent=4, sort_keys=True))
+    variable_id = result['variable_id']['value']
+if not variable_id:
+    print("Unable to find PIHM data in data catalog")
+    sys.exit(1)
+
+# now that we have a variable_id, get the data location
+url = "http://mint-demo.westus2.cloudapp.azure.com/data_sets/get_location_url"
+headers = {'Content-type': 'application/json'}
+payload = {'variable_id': variable_id}
+r = requests.post(url, headers=headers, json=payload)
+if not r.ok:
+    r.raise_for_status()
+    sys.exit(1)
+
+data = json.loads(r.content)
+print json.dumps(data, indent=4, sort_keys=True)
+
+# now we have the final url
+url = data['results']['bindings'][0]['storage_path']['value']
+r = requests.get(url)
+if not r.ok:
+    r.raise_for_status()
+    sys.exit(1)
+
+f = open('PIHM_base.tar.gz', 'wb')
+for chunk in r.iter_content(chunk_size=128):
+    f.write(chunk)
+f.close()
+
+

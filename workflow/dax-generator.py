@@ -23,31 +23,28 @@ weather_data = File('weather.data')
 ldas.uses(weather_data, link=Link.OUTPUT, transfer=False)
 dax.addJob(ldas)
 
-# configure PIHM
-pihm_setup = Job('PIHM-setup.sh')
-pihm_base = File('PIHM-base.tar.gz')
-pihm_setup.uses(pihm_base, link=Link.OUTPUT, transfer=False)
-dax.addJob(pihm_setup)
+# PIHM-data-find binary
+pihm_data_find = File('PIHM-data-find')
+pihm_data_find.addPFN(PFN('file://' + top_dir + '/PIHM/PIHM-data-find', 'local'))
+dax.addFile(pihm_data_find)
 
 # transformation: LDAS->PIHM
 ldas_pihm = Job('LDAS-PIHM-transformation.sh')
+ldas_pihm.uses(pihm_data_find, link=Link.INPUT)
 ldas_pihm.uses(weather_data, link=Link.INPUT)
-ldas_pihm.uses(pihm_base, link=Link.INPUT)
 pihm_forcing = File('pihm.forc')
 ldas_pihm.uses(pihm_forcing, link=Link.OUTPUT, transfer=False)
 dax.addJob(ldas_pihm)
 dax.depends(parent=ldas, child=ldas_pihm)
-dax.depends(parent=pihm_setup, child=ldas_pihm)
 
 # PIHM
 pihm = Job('PIHM-wrapper.sh')
-pihm.uses(pihm_base, link=Link.INPUT)
+pihm.uses(pihm_data_find, link=Link.INPUT)
 pihm.uses(pihm_forcing, link=Link.INPUT)
 # output is a tarball of the state
 pihm_state = File('PIHM-state.tar.gz')
 pihm.uses(pihm_state, link=Link.OUTPUT, transfer=True)
 dax.addJob(pihm)
-dax.depends(parent=pihm_setup, child=pihm)
 dax.depends(parent=ldas_pihm, child=pihm)
    
 # need the real Cycles binary - will probably be a Docker image in the future

@@ -1,0 +1,92 @@
+#!/usr/bin/env python
+
+# user the MINT data catalog to find the FLDAS data
+
+import datetime
+import json
+import os
+import requests
+import sys
+
+def download(standard_name, date, out_file_path):
+
+    url = 'http://mint-demo.westus2.cloudapp.azure.com/data_sets'
+    params = {
+        'standard_name': standard_name,
+        'start_time': '%sT00:00:00' % date,
+        'end_time': '%sT23:59:59' % date,
+    }
+    r = requests.get(url, params=params)
+    if not r.ok:
+         r.raise_for_status()
+         sys.exit(1)
+    
+    data = json.loads(r.content)
+    
+    # TODO: handle multiple hits
+    variable_id = None
+    for result in data['results']['bindings']:
+        print(json.dumps(result, indent=4, sort_keys=True))
+        variable_id = result['variable_id']['value']
+    if not variable_id:
+        print("Unable to find data in data catalog!")
+        sys.exit(1)
+    
+    # now that we have a variable_id, get the data location
+    url = "http://mint-demo.westus2.cloudapp.azure.com/data_sets/get_location_url"
+    headers = {'Content-type': 'application/json'}
+    payload = {'variable_id': variable_id}
+    r = requests.post(url, headers=headers, json=payload)
+    if not r.ok:
+        r.raise_for_status()
+        sys.exit(1)
+    
+    data = json.loads(r.content)
+    print json.dumps(data, indent=4, sort_keys=True)
+    
+    # now we have the final url
+    url = data['results']['bindings'][0]['storage_path']['value']
+    r = requests.get(url)
+    if not r.ok:
+        r.raise_for_status()
+        sys.exit(1)
+
+    # make sure we have subdirs
+    try:
+        os.makedirs(os.path.dirname(out_file_path))
+    except:
+        pass
+    
+    # write the data
+    f = open(out_file_path, 'wb')
+    for chunk in r.iter_content(chunk_size=128):
+        f.write(chunk)
+    f.close()
+
+
+cur_date = datetime.date(2015, 1, 1)
+end_date = datetime.date(2015, 3, 31)
+
+while cur_date <= end_date:
+
+
+    # TODO: Properly match this to the correct variables
+    for variable in [
+        'air_temperature',
+        'specific_humidity',
+        'total_evapotranspiration',
+        'wind_speed'
+        ]:
+
+
+        out_name = 'FLDAS_NOAH01_A_EA_D.001/%4d/%02d/FLDAS_NOAH01_A_EA_D.A%4d%02d%02d.001.nc' \
+                    %(cur_date.year, cur_date.month, cur_date.year, cur_date.month, cur_date.day)
+
+        if not os.path.exists(out_name):
+            download(variable, cur_date.isoformat(), out_name)
+        else:
+            print('... already downloaded: ' + out_name)
+
+    cur_date = cur_date + datetime.timedelta(days=1)
+
+

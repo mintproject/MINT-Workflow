@@ -2,18 +2,9 @@
 
 cat <<EOF
 
-# Lucas' PIHM image from DockerHub
 cont PIHM_Docker {
     type "docker"
-    image "docker://mintproject/pihm"
-}
-
-tr PIHM-setup.sh {
-    site condor_pool {
-        type "STAGEABLE"
-        container "PIHM_Docker"
-        pfn "file://$PWD/PIHM/PIHM-setup.sh"
-    }
+    image "docker://mintproject/pihm:latest"
 }
 
 tr PIHM-wrapper.sh {
@@ -55,6 +46,7 @@ tr LDAS-Cycles-transformation.sh {
 tr LDAS-PIHM-transformation.sh {
     site condor_pool {
         type "STAGEABLE"
+        container "PIHM_Docker"
         pfn "file://$PWD/transformations/LDAS-PIHM-transformation.sh"
     }
 } 

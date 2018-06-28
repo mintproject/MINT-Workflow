@@ -17,9 +17,15 @@ dax.invoke('all', top_dir + '/workflow/generate-graphs.sh')
 
 inputs = []
 
+# LDAS-data-find binary
+ldas_data_find = File('LDAS-data-find')
+ldas_data_find.addPFN(PFN('file://' + top_dir + '/weather/LDAS-data-find', 'local'))
+dax.addFile(ldas_data_find)
+
 # weather data
 ldas = Job('LDAS.sh')
-weather_data = File('weather.data')
+weather_data = File('weather.tar.gz')
+ldas.uses(ldas_data_find, link=Link.INPUT)
 ldas.uses(weather_data, link=Link.OUTPUT, transfer=False)
 dax.addJob(ldas)
 
@@ -28,8 +34,14 @@ pihm_data_find = File('PIHM-data-find')
 pihm_data_find.addPFN(PFN('file://' + top_dir + '/PIHM/PIHM-data-find', 'local'))
 dax.addFile(pihm_data_find)
 
+# FLDAS-to-PIHM.R binary
+fldas_to_pihm = File('FLDAS-to-PIHM.R')
+fldas_to_pihm.addPFN(PFN('file://' + top_dir + '/PIHM/FLDAS-to-PIHM.R', 'local'))
+dax.addFile(fldas_to_pihm)
+
 # transformation: LDAS->PIHM
 ldas_pihm = Job('LDAS-PIHM-transformation.sh')
+ldas_pihm.uses(fldas_to_pihm, link=Link.INPUT)
 ldas_pihm.uses(pihm_data_find, link=Link.INPUT)
 ldas_pihm.uses(weather_data, link=Link.INPUT)
 pihm_forcing = File('pihm.forc')

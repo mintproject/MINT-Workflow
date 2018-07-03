@@ -17,15 +17,20 @@ dax.invoke('all', top_dir + '/workflow/generate-graphs.sh')
 
 inputs = []
 
+# Run config
+run_config = File('mint_run.config')
+run_config.addPFN(PFN('file://' + top_dir + '/mint_run.config', 'local'))
+dax.addFile(run_config)
+
 # LDAS-data-find binary
 ldas_data_find = File('LDAS-data-find')
 ldas_data_find.addPFN(PFN('file://' + top_dir + '/weather/LDAS-data-find', 'local'))
 dax.addFile(ldas_data_find)
 
 # weather data
-ldas = Job('LDAS.sh')
+ldas = Job('LDAS-data-find')
+ldas.uses(run_config, link=Link.INPUT)
 weather_data = File('weather.tar.gz')
-ldas.uses(ldas_data_find, link=Link.INPUT)
 ldas.uses(weather_data, link=Link.OUTPUT, transfer=False)
 dax.addJob(ldas)
 
@@ -41,6 +46,7 @@ dax.addFile(fldas_to_pihm)
 
 # transformation: LDAS->PIHM
 ldas_pihm = Job('LDAS-PIHM-transformation.sh')
+ldas_pihm.uses(run_config, link=Link.INPUT)
 ldas_pihm.uses(fldas_to_pihm, link=Link.INPUT)
 ldas_pihm.uses(pihm_data_find, link=Link.INPUT)
 ldas_pihm.uses(weather_data, link=Link.INPUT)
@@ -76,11 +82,12 @@ for point in ['one', 'two', 'three']:
     dax.depends(parent=pihm, child=cycles_setup)
     
     # transformation: LDAS->Cycles
-    ldas_cycles = Job('LDAS-Cycles-transformation.sh')
+    ldas_cycles = Job('FLDAS-Cycles-transformation.py')
+    ldas_cycles.uses(run_config, link=Link.INPUT)
     ldas_cycles.uses(weather_data, link=Link.INPUT)
     cycles_weather = File('Cycles-%s.weather' %(point))
     ldas_cycles.uses(cycles_weather, link=Link.OUTPUT, transfer=False)
-    ldas_cycles.addArguments(point)
+    ldas_cycles.addArguments(cycles_weather)
     dax.addJob(ldas_cycles)
     dax.depends(parent=cycles_setup, child=ldas_cycles)
     dax.depends(parent=ldas, child=ldas_cycles)

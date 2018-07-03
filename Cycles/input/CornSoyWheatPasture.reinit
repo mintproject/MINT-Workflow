@@ -1,8 +1,0 @@
-# Available options for initialization variables are:
-#   SMC (m3/m3), and
-#   NO3 (kg/ha), and
-#   NH4 (kg/ha).
-# Use "_LX" to specify the variable for layer X.
-
-ROT_YEAR    DOY     VARIABLE        VALUE
-1           100     SMC_L1          0.3

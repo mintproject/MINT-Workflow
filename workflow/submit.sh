@@ -6,6 +6,12 @@ TOP_DIR=`dirname $0`
 TOP_DIR=`cd $TOP_DIR/.. && pwd`
 cd $TOP_DIR
 
+# does the required config files exist?
+if [ ! -e "$TOP_DIR/mint_run.config" ]; then
+    echo "Required file mint_run.config does not exist"
+    exit 1
+fi
+
 export RUN_ID=mint-`date +'%s'`
 export RUN_DIR=/local-scratch/$USER/workflow/$RUN_ID
 

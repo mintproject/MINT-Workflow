@@ -2,9 +2,22 @@
 
 cat <<EOF
 
+cont Ubuntu18_Docker {
+    type "docker"
+    image "docker://mintproject/base-ubuntu18:latest"
+}
+
 cont PIHM_Docker {
     type "docker"
     image "docker://mintproject/pihm:latest"
+}
+
+tr LDAS-data-find {
+    site condor_pool {
+        type "STAGEABLE"
+        container "Ubuntu18_Docker"
+        pfn "file://$PWD/weather/LDAS-data-find"
+    }
 }
 
 tr PIHM-wrapper.sh {
@@ -29,17 +42,11 @@ tr Cycles-wrapper.sh {
     }
 }
 
-tr LDAS.sh {
+tr FLDAS-Cycles-transformation.py {
     site condor_pool {
         type "STAGEABLE"
-        pfn "file://$PWD/weather/LDAS.sh"
-    }
-} 
-
-tr LDAS-Cycles-transformation.sh {
-    site condor_pool {
-        type "STAGEABLE"
-        pfn "file://$PWD/transformations/LDAS-Cycles-transformation.sh"
+        container "Ubuntu18_Docker"
+        pfn "file://$PWD/transformations/FLDAS-Cycles-transformation.py"
     }
 } 
 

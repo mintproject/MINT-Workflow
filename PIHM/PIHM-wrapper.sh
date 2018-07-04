@@ -7,8 +7,8 @@ chmod 755 PIHM-data-find
 
 tar xzf PIHM_base.tar.gz
 
-# only run for 1 month for testing
-perl -p -i -e 's/5256000/44640/' PIHM-base/ga.para
+# only run for 1 year for testing
+perl -p -i -e 's/5256000/259200/' PIHM-base/ga.para
 
 # detemin the project name
 cd PIHM-base

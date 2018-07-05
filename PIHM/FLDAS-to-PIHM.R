@@ -172,7 +172,7 @@ fun.toForc <- function (x,lxy,years = 2001:2017,
 
   forcnames = c( "Precip", "Temp", "RH", "Wind", "RN",
                  "G","LW", "LAI", "MF", "SS" )
-  Forc<-list(   prcp *24/1000   , #mm/hour(NLDAS-2) to m/day (PIHM)
+  Forc<-list(   prcp * 86400/1000   , #mm/m2/s(FLDAS daily) to m/day (PIHM).
                 temp -273.15   , # C
                 rh/100  ,  # PERCENTAGE
                 abs(winds) * 86400  , #m/s to m/day

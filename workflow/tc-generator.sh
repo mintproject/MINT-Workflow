@@ -12,6 +12,11 @@ cont PIHM_Docker {
     image "docker://mintproject/pihm:latest"
 }
 
+cont Cycles_Docker {
+    type "docker"
+    image "docker://mintproject/cycles:latest"
+}
+
 tr LDAS-data-find {
     site condor_pool {
         type "STAGEABLE"
@@ -28,16 +33,10 @@ tr PIHM-wrapper.sh {
     }
 }
 
-tr Cycles-setup.sh {
-    site condor_pool {
-        type "STAGEABLE"
-        pfn "file://$PWD/Cycles/Cycles-setup.sh"
-    }
-}
-
 tr Cycles-wrapper.sh {
     site condor_pool {
         type "STAGEABLE"
+        container "Cycles_Docker"
         pfn "file://$PWD/Cycles/Cycles-wrapper.sh"
     }
 }
@@ -58,10 +57,11 @@ tr LDAS-PIHM-transformation.sh {
     }
 } 
 
-tr PIHM-Cycles-transformation.sh {
+tr PIHM-Cycles-transformation.py {
     site condor_pool {
         type "STAGEABLE"
-        pfn "file://$PWD/transformations/PIHM-Cycles-transformation.sh"
+        container "Ubuntu18_Docker"
+        pfn "file://$PWD/transformations/PIHM-Cycles-transformation.py"
     }
 } 
 

@@ -90,7 +90,7 @@ for point in ['one', 'two', 'three']:
     dax.depends(parent=ldas, child=ldas_cycles)
     
     # transformation: PIHM->Cycles
-    pihm_cycles = Job('PIHM-Cycles-transformation.sh')
+    pihm_cycles = Job('PIHM-Cycles-transformation.py')
     pihm_cycles.uses(pihm_state, link=Link.INPUT)
     cycles_reinit = File('Cycles-%s.REINIT' %(point))
     pihm_cycles.uses(cycles_reinit, link=Link.OUTPUT, transfer=True)

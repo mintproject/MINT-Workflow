@@ -18,9 +18,7 @@ perl -p -i -e 's/ROTATION_SIZE.*/ROTATION_SIZE    1/' input/SS_sorghum_ry17.ctrl
 mv Cycles-${POINT}.weather input/SS_x3085y0535_ldas.weather
 mv Cycles-${POINT}.REINIT input/SS_fswc.REINIT
 
-chmod 755 Cycles
-#./Cycles $POINT
-./Cycles SS_sorghum_ry17
+Cycles SS_sorghum_ry17
 
 mv output Cycles-${POINT}-results
 tar czf Cycles-${POINT}-results.tar.gz Cycles-${POINT}-results

@@ -70,11 +70,11 @@ def download(standard_name, date, out_file_path):
     f.close()
 
 # TODO: temp
-subprocess.call('wget -nv http://workflow.isi.edu/MINT/MINT-Workflow/v2/intermediate/weather.tar.gz', shell=True)
-sys.exit(0)
+#subprocess.call('wget -nv http://workflow.isi.edu/MINT/MINT-Workflow/v2/intermediate/weather.tar.gz', shell=True)
+#sys.exit(0)
 
-cur_date = datetime.date(2015, 1, 1)
-end_date = datetime.date(2015, 3, 31)
+cur_date = datetime.date(2017, 1, 1)
+end_date = datetime.date(2017, 12, 31)
 
 # get the general configuration from the global mint_run.config
 fp = open('mint_run.config', 'r')

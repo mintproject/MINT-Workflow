@@ -8,6 +8,18 @@ import sys
 
 def main():
 
+    # get the general configuration from the global mint_run.config
+    fp = open('mint_run.config', 'r')
+    config_string = '[DEFAULT]\n' + fp.read()
+    fp.close()
+    run_config = configparser.ConfigParser()
+    run_config.read_string(config_string)
+
+    start_time = run_config.get('DEFAULT', 'start_time')
+    start_dt = parser.parse(start_time)
+    end_time = run_config.get('DEFAULT', 'end_time')
+    end_dt = parser.parse(end_time)
+
     # TODO: this is the correct patch id for Gel-Aliab demo, but should
     # be found dynamically in the future
     patch_id = 282 
@@ -26,13 +38,18 @@ def main():
 
     inf = open(pihm_infil_fname, 'r')
     data = csv.reader(inf, delimiter='\t')
-    day = 1
+    dt = start_dt
     for row in data:
-        # TODO: handle years/days 
-        # TODO: are the units correct?
+
+        year = dt.year - start_dt.year + 1
+        day_of_year  = int(dt.strftime('%j'))
+
         infiltration = float(row[patch_id]) * 1000 # m to mm
-        outf.write('1\t%d\tINFILTRATION\t%8.4f\n' %(day, infiltration))
-        day += 1
+        outf.write('%d\t%d\tINFILTRATION\t%8.4f\n' \
+                   %(year, day_of_year, infiltration))
+
+        # move to the next day
+        dt = dt + datetime.timedelta(days = 1)
 
     inf.close()
     outf.close()

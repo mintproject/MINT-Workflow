@@ -52,6 +52,8 @@ ldas_pihm.uses(pihm_data_find, link=Link.INPUT)
 ldas_pihm.uses(weather_data, link=Link.INPUT)
 pihm_forcing = File('pihm.forc')
 ldas_pihm.uses(pihm_forcing, link=Link.OUTPUT, transfer=True)
+# positional arguments to match WINGS
+ldas_pihm.addArguments(run_config, fldas_to_pihm, pihm_data_find, weather_data)
 dax.addJob(ldas_pihm)
 dax.depends(parent=ldas, child=ldas_pihm)
 
@@ -64,14 +66,15 @@ pihm_state = File('PIHM-state.tar.gz')
 pihm.uses(pihm_state, link=Link.OUTPUT, transfer=True)
 dax.addJob(pihm)
 dax.depends(parent=ldas_pihm, child=pihm)
-   
-# need the real Cycles binary - will probably be a Docker image in the future
-cycles_binary = File('Cycles')
-cycles_binary.addPFN(PFN('file://' + top_dir + '/Cycles/Cycles', 'local'))
-dax.addFile(cycles_binary)
 
-# fake points for now - we only have one real one
-for point in ['one', 'two', 'three']:
+
+# create a job to execute economic model - this comes after cycles!
+economic = Job('economic-wrapper.sh')
+#economic.uses(economic_outputs, link=Link.OUTPUT, transfer=True)
+dax.addJob(economic)
+
+# we need two cycles run - one base line and one 10% increase in fertilization
+for point in ['base_line', '10_percent_inc']:
 
     # cycles config
     cycles_config = File('mint_cycles-' + str(point) + '.config')
@@ -91,6 +94,7 @@ for point in ['one', 'two', 'three']:
     
     # transformation: PIHM->Cycles
     pihm_cycles = Job('PIHM-Cycles-transformation.py')
+    pihm_cycles.uses(run_config, link=Link.INPUT)
     pihm_cycles.uses(pihm_state, link=Link.INPUT)
     cycles_reinit = File('Cycles-%s.REINIT' %(point))
     pihm_cycles.uses(cycles_reinit, link=Link.OUTPUT, transfer=True)
@@ -100,7 +104,6 @@ for point in ['one', 'two', 'three']:
 
     # create a job to execute Cycles
     cycles = Job('Cycles-wrapper.sh')
-    cycles.uses(cycles_binary, link=Link.INPUT)
     cycles.uses(cycles_weather, link=Link.INPUT)
     cycles.uses(cycles_reinit, link=Link.INPUT)
     cycles_outputs = File('Cycles-%s-results.tar.gz' %(point))
@@ -109,6 +112,11 @@ for point in ['one', 'two', 'three']:
     dax.addJob(cycles)
     dax.depends(parent=ldas_cycles, child=cycles)
     dax.depends(parent=pihm_cycles, child=cycles)
+
+    # update economic job
+    dax.depends(parent=cycles, child=economic)
+    economic.uses(cycles_outputs, link=Link.INPUT)
+
 
 # Write the DAX
 f = open('workflow/generated/dax.xml', 'w')

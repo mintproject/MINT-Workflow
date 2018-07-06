@@ -2,7 +2,7 @@
 
 set -e
 
-POINT=$1
+SCENARIO=$1
 
 # set up the input directory
 wget -nv -O Cycles-base.tar.gz http://workflow.isi.edu/MINT/MINT-Workflow/v2/Cycles-base.tar.gz
@@ -14,12 +14,16 @@ perl -p -i -e 's/SIMULATION_START_YEAR.*/SIMULATION_START_YEAR   2017/' input/SS
 perl -p -i -e 's/SIMULATION_END_YEAR.*/SIMULATION_END_YEAR   2017/' input/SS_sorghum_ry17.ctrl
 perl -p -i -e 's/ROTATION_SIZE.*/ROTATION_SIZE    1/' input/SS_sorghum_ry17.ctrl
 
+if [ "x$SCENARIO" = "x10_percent_inc" ]; then
+    perl -p -i -e 's/^MASS.*/MASS                110/' input/SS_sorghum_ry17.ctrl
+fi
+
 # TODO: determine target names
-mv Cycles-${POINT}.weather input/SS_x3085y0535_ldas.weather
-mv Cycles-${POINT}.REINIT input/SS_fswc.REINIT
+mv Cycles-${SCENARIO}.weather input/SS_x3085y0535_ldas.weather
+mv Cycles-${SCENARIO}.REINIT input/SS_fswc.REINIT
 
 Cycles SS_sorghum_ry17
 
-mv output Cycles-${POINT}-results
-tar czf Cycles-${POINT}-results.tar.gz Cycles-${POINT}-results
+mv output Cycles-${SCENARIO}-results
+tar czf Cycles-${SCENARIO}-results.tar.gz Cycles-${SCENARIO}-results
 

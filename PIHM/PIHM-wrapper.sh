@@ -19,6 +19,9 @@ echo "$PROJECT_NAME" >projectName.txt
 # copy the forcing data into place
 cp ../pihm.forc ${PROJECT_NAME}.forc
 
+# TODO: TEMP - USE ORIG FORCING DATA
+wget -nv -O ${PROJECT_NAME}.forc http://workflow.isi.edu/MINT//MINT-Workflow/v2/PIHM-forcing
+
 echo
 echo
 /usr/bin/pihm 2>&1

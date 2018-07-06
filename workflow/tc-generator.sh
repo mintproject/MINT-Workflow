@@ -17,6 +17,11 @@ cont Cycles_Docker {
     image "docker://mintproject/cycles:latest"
 }
 
+cont Economic_Docker {
+    type "docker"
+    image "docker://mintproject/economic:latest"
+}
+
 tr LDAS-data-find {
     site condor_pool {
         type "STAGEABLE"
@@ -38,6 +43,14 @@ tr Cycles-wrapper.sh {
         type "STAGEABLE"
         container "Cycles_Docker"
         pfn "file://$PWD/Cycles/Cycles-wrapper.sh"
+    }
+}
+
+tr economic-wrapper.sh {
+    site condor_pool {
+        type "STAGEABLE"
+        container "Economic_Docker"
+        pfn "file://$PWD/economic/economic-wrapper.sh"
     }
 }
 

@@ -30,7 +30,7 @@ def main():
     for row in data:
         # TODO: handle years/days 
         # TODO: are the units correct?
-        infiltration = float(row[patch_id])
+        infiltration = float(row[patch_id]) * 1000 # m to mm
         outf.write('1\t%d\tINFILTRATION\t%8.4f\n' %(day, infiltration))
         day += 1
 

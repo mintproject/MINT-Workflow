@@ -78,5 +78,14 @@ tr PIHM-Cycles-transformation.py {
     }
 } 
 
+tr Cycles-to-crop.py {
+    site condor_pool {
+        type "STAGEABLE"
+        container "Ubuntu18_Docker"
+        pfn "file://$PWD/transformations/Cycles-to-crop.py"
+    }
+} 
+
+
 EOF
 

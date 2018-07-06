@@ -32,7 +32,7 @@ pegasus-plan \
     --conf workflow/pegasus.conf \
     --sites condor_pool \
     --output-site local \
-    --cleanup inplace \
+    --cleanup none \
     --relative-dir $RUN_ID \
     --dir $RUN_DIR \
     --dax workflow/generated/dax.xml \

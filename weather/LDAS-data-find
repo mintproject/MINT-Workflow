@@ -76,10 +76,6 @@ def download(scenario, standard_name, date, out_file_path):
         f.write(chunk)
     f.close()
 
-# TODO: temp
-#subprocess.call('wget -nv http://workflow.isi.edu/MINT/MINT-Workflow/v2/intermediate/weather.tar.gz', shell=True)
-#sys.exit(0)
-
 cur_date = datetime.date(2017, 1, 1)
 end_date = datetime.date(2017, 12, 31)
 
@@ -120,7 +116,7 @@ while cur_date <= end_date:
 
     cur_date = cur_date + datetime.timedelta(days=1)
 
-if subprocess.call('tar czf weather.tar.gz FLDAS_NOAH01_A_EA_D.001', shell=True) != 0:
+if subprocess.call('tar ' + sys.argv[1] + ' FLDAS_NOAH01_A_EA_D.001', shell=True) != 0:
     print("Taring of data failed")
     sys.exit(1)
 

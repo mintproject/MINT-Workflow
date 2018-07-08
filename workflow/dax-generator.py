@@ -32,6 +32,7 @@ ldas = Job('LDAS-data-find')
 ldas.uses(run_config, link=Link.INPUT)
 weather_data = File('weather.tar.gz')
 ldas.uses(weather_data, link=Link.OUTPUT, transfer=False)
+ldas.addArguments(weather_data)
 dax.addJob(ldas)
 
 # PIHM-data-find binary
@@ -65,6 +66,7 @@ pihm.uses(pihm_forcing, link=Link.INPUT)
 # output is a tarball of the state
 pihm_state = File('PIHM-state.tar.gz')
 pihm.uses(pihm_state, link=Link.OUTPUT, transfer=True)
+pihm.addArguments(run_config, pihm_data_find, pihm_forcing)
 dax.addJob(pihm)
 dax.depends(parent=ldas_pihm, child=pihm)
 

@@ -6,6 +6,7 @@ import configparser
 import datetime
 import json
 import os
+import re
 import requests
 import subprocess
 import sys
@@ -13,7 +14,7 @@ import sys
 from dateutil import parser
 
 
-def download(standard_name, date, out_file_path):
+def download(scenario, standard_name, date, out_file_path):
 
     url = 'http://mint-demo.westus2.cloudapp.azure.com/data_sets'
     params = {
@@ -49,6 +50,12 @@ def download(standard_name, date, out_file_path):
     
     data = json.loads(r.text)
     print(json.dumps(data, indent=4, sort_keys=True))
+
+    # if scenario is anything but baseline, update the url
+    if scenario != 'baseline':
+        url = re.sub('FLDAS/FLDAS_NOAH01_A_EA_D\.001',
+                     'FLDAS/scenarios/' + scenario + 'FLDAS_NOAH01_A_EA_D.001',
+                     url)
     
     # now we have the final url
     url = data['results']['bindings'][0]['storage_path']['value']
@@ -70,8 +77,8 @@ def download(standard_name, date, out_file_path):
     f.close()
 
 # TODO: temp
-subprocess.call('wget -nv http://workflow.isi.edu/MINT/MINT-Workflow/v2/intermediate/weather.tar.gz', shell=True)
-sys.exit(0)
+#subprocess.call('wget -nv http://workflow.isi.edu/MINT/MINT-Workflow/v2/intermediate/weather.tar.gz', shell=True)
+#sys.exit(0)
 
 cur_date = datetime.date(2017, 1, 1)
 end_date = datetime.date(2017, 12, 31)
@@ -83,13 +90,15 @@ fp.close()
 run_config = configparser.ConfigParser()
 run_config.read_string(config_string)
 
-start_time = run_config.get('DEFAULT', 'start_time')
-start_dt = parser.parse(start_time)
-end_time = run_config.get('DEFAULT', 'end_time')
-end_dt = parser.parse(end_time)
+start_year = run_config.get('DEFAULT', 'start_year')
+end_year = run_config.get('DEFAULT', 'end_year')
 
-cur_date = start_dt.date()
-end_date = end_dt.date()
+cur_date = datetime.date(int(start_year), 1, 1)
+end_date = datetime.date(int(end_year), 12, 31)
+
+scenario = run_config.get('DEFAULT', 'scenario')
+if scenario is None or scenario == '':
+    scenario = 'baseline'
 
 while cur_date <= end_date:
 
@@ -105,7 +114,7 @@ while cur_date <= end_date:
                     %(cur_date.year, cur_date.month, cur_date.year, cur_date.month, cur_date.day)
 
         if not os.path.exists(out_name):
-            download(variable, cur_date.isoformat(), out_name)
+            download(scenario, variable, cur_date.isoformat(), out_name)
         else:
             print('... already downloaded: ' + out_name)
 

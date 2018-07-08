@@ -115,10 +115,10 @@ def main():
     config = configparser.ConfigParser()
     config.read_string(config_string)
 
-    start_time = run_config.get('DEFAULT', 'start_time')
-    start_dt = parser.parse(start_time)
-    end_time = run_config.get('DEFAULT', 'end_time')
-    end_dt = parser.parse(end_time)
+    start_year = run_config.get('DEFAULT', 'start_year')
+    start_dt = parser.parse(start_year + '-01-01T00:00:00')
+    end_year = run_config.get('DEFAULT', 'end_year')
+    end_dt = parser.parse(end_year + '-12-31T23:59:59')
 
     lat = config.get('DEFAULT', 'lat')
     lon = config.get('DEFAULT', 'lon')

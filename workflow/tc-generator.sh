@@ -30,11 +30,11 @@ tr LDAS-data-find {
     }
 }
 
-tr PIHM-wrapper.sh {
+tr PIHM-wrapper.py {
     site condor_pool {
         type "STAGEABLE"
         container "PIHM_Docker"
-        pfn "file://$PWD/PIHM/PIHM-wrapper.sh"
+        pfn "file://$PWD/PIHM/PIHM-wrapper.py"
     }
 }
 

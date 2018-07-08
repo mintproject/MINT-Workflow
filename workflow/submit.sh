@@ -18,6 +18,13 @@ export RUN_DIR=/local-scratch/$USER/workflow/$RUN_ID
 mkdir -p $RUN_DIR
 mkdir -p workflow/generated
 
+# set up the replica catalog
+if [ -e workflow/replica.data.init ]; then
+    cp workflow/replica.data.init workflow/replica.data
+else
+    cat /dev/null >workflow/replica.data
+fi
+
 # create a site catalog from the template
 envsubst < workflow/sites.template.xml > workflow/generated/sites.xml
 

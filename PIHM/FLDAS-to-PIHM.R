@@ -424,7 +424,7 @@ for(idd  in 1:ndir){ # for each year dir
     fn=fns[j]
     t=substr(basename(fn), 22, 29)
     message(j, '/', nf, '\t', t)
-    x.mat = readnc(fn, xyid=xid, vns=vns)
+    x.mat = readnc(fn, xyid=xyid, vns=vns)
     x.t[j] = t
     x.arr[,,j ] = x.mat 
   }

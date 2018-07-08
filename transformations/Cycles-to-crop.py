@@ -32,7 +32,7 @@ for item in base_run_names:
         base_file = base_run.extract(item)
 
 # Open the files and look for the grain yield
-data = pd.read_table(path+file_name, delimiter = '\t',\
+data = pd.read_table(file_name, delimiter = '\t',\
                      skiprows = [1], index_col=False)
 
 # Get the Grain yield header
@@ -51,7 +51,7 @@ for item in scenario_run_names:
         scenario_file = scenario_run.extract(item)
 
 # Open the files and look for the grain yield
-data = pd.read_table(path+file_name, delimiter = '\t',\
+data = pd.read_table(file_name, delimiter = '\t',\
                      skiprows = [1], index_col=False)
 
 # Get the Grain yield header

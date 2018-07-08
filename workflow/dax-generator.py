@@ -58,7 +58,8 @@ dax.addJob(ldas_pihm)
 dax.depends(parent=ldas, child=ldas_pihm)
 
 # PIHM
-pihm = Job('PIHM-wrapper.sh')
+pihm = Job('PIHM-wrapper.py')
+pihm.uses(run_config, link=Link.INPUT)
 pihm.uses(pihm_data_find, link=Link.INPUT)
 pihm.uses(pihm_forcing, link=Link.INPUT)
 # output is a tarball of the state
@@ -67,7 +68,6 @@ pihm.uses(pihm_state, link=Link.OUTPUT, transfer=True)
 dax.addJob(pihm)
 dax.depends(parent=ldas_pihm, child=pihm)
 
-
 # create a job to execute cycles_to_crop transformation - this comes after cycles!
 cycles_to_crop = Job('Cycles-to-crop.py')
 crops_output =  File('yieldelast.csv')
@@ -75,7 +75,7 @@ cycles_to_crop.uses(crops_output, link=Link.OUTPUT, transfer=True)
 dax.addJob(cycles_to_crop)
 
 # we need two cycles run - one base line and one 10% increase in fertilization
-for point in ['base_line', '10_percent_inc']:
+for point in ['baseline', '10_percent_inc']:
 
     # cycles config
     cycles_config = File('mint_cycles-' + str(point) + '.config')
@@ -117,9 +117,16 @@ for point in ['base_line', '10_percent_inc']:
     # update cycles_to_crop job
     dax.depends(parent=cycles, child=cycles_to_crop)
     cycles_to_crop.uses(cycles_outputs, link=Link.INPUT)
+    cycles_to_crop.addArguments(cycles_outputs)
+
+# economic model gams file
+land_use = File('land-use.gams')
+land_use.addPFN(PFN('file://' + top_dir + '/economic/land-use.gams', 'local'))
+dax.addFile(land_use)
 
 # create a job to execute economic model
 economic = Job('economic-wrapper.sh')
+economic.uses(land_use, link=Link.INPUT)
 economic.uses(crops_output, link=Link.INPUT)
 #economic.uses(economic_outputs, link=Link.OUTPUT, transfer=True)
 dax.addJob(economic)

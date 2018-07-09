@@ -50,15 +50,17 @@ def download(scenario, standard_name, date, out_file_path):
     
     data = json.loads(r.text)
     print(json.dumps(data, indent=4, sort_keys=True))
+    
+    url = data['results']['bindings'][0]['storage_path']['value']
 
     # if scenario is anything but baseline, update the url
     if scenario != 'baseline':
         url = re.sub('FLDAS/FLDAS_NOAH01_A_EA_D\.001',
-                     'FLDAS/scenarios/' + scenario + 'FLDAS_NOAH01_A_EA_D.001',
+                     'FLDAS/scenarios/' + scenario + '/FLDAS_NOAH01_A_EA_D.001',
                      url)
     
     # now we have the final url
-    url = data['results']['bindings'][0]['storage_path']['value']
+    print('Downloading ' + url)
     r = requests.get(url)
     if not r.ok:
         r.raise_for_status()
@@ -116,7 +118,7 @@ while cur_date <= end_date:
 
     cur_date = cur_date + datetime.timedelta(days=1)
 
-if subprocess.call('tar czf ' + sys.argv[3] + ' FLDAS_NOAH01_A_EA_D.001', shell=True) != 0:
+if subprocess.call('tar czf ' + sys.argv[2] + ' FLDAS_NOAH01_A_EA_D.001', shell=True) != 0:
     print("Taring of data failed")
     sys.exit(1)
 

@@ -18,11 +18,9 @@ export RUN_DIR=/local-scratch/$USER/workflow/$RUN_ID
 mkdir -p $RUN_DIR
 mkdir -p workflow/generated
 
-# set up the replica catalog
-if [ -e workflow/replica.data.init ]; then
-    cp workflow/replica.data.init workflow/replica.data
-else
-    cat /dev/null >workflow/replica.data
+# set up the replica catalog, if one is provided
+if [ "X$1" != "X" ]; then
+    cp "$1" $RUN_DIR/replica.data
 fi
 
 # create a site catalog from the template
@@ -36,6 +34,7 @@ envsubst < workflow/sites.template.xml > workflow/generated/sites.xml
 
 # plan and submit
 pegasus-plan \
+    -Dpegasus.catalog.replica.file=$RUN_DIR/replica.data \
     --conf workflow/pegasus.conf \
     --sites condor_pool \
     --output-site local \

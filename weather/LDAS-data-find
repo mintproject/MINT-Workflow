@@ -116,7 +116,7 @@ while cur_date <= end_date:
 
     cur_date = cur_date + datetime.timedelta(days=1)
 
-if subprocess.call('tar czf ' + sys.argv[1] + ' FLDAS_NOAH01_A_EA_D.001', shell=True) != 0:
+if subprocess.call('tar czf ' + sys.argv[3] + ' FLDAS_NOAH01_A_EA_D.001', shell=True) != 0:
     print("Taring of data failed")
     sys.exit(1)
 

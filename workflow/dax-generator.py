@@ -32,7 +32,8 @@ ldas = Job('LDAS-data-find')
 ldas.uses(run_config, link=Link.INPUT)
 weather_data = File('weather.tar.gz')
 ldas.uses(weather_data, link=Link.OUTPUT, transfer=False)
-ldas.addArguments(weather_data)
+# match arguments in Wings
+ldas.addArguments(run_config, 'noop', weather_data)
 dax.addJob(ldas)
 
 # PIHM-data-find binary

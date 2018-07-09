@@ -123,15 +123,16 @@ for point in ['baseline', '10_percent_inc']:
     cycles_to_crop.addArguments(cycles_outputs)
 
 # economic model gams file
-land_use = File('land-use.gams')
-land_use.addPFN(PFN('file://' + top_dir + '/economic/land-use.gams', 'local'))
-dax.addFile(land_use)
+crop_production = File('cropproduction.gms')
+crop_production.addPFN(PFN('file://' + top_dir + '/economic/cropproduction.gms', 'local'))
+dax.addFile(crop_production)
 
 # create a job to execute economic model
 economic = Job('economic-wrapper.sh')
-economic.uses(land_use, link=Link.INPUT)
+economic.uses(crop_production, link=Link.INPUT)
 economic.uses(crops_output, link=Link.INPUT)
-#economic.uses(economic_outputs, link=Link.OUTPUT, transfer=True)
+land_use = File('MINTlanduse.csv')
+economic.uses(land_use, link=Link.OUTPUT, transfer=True)
 dax.addJob(economic)
 dax.depends(parent=cycles_to_crop, child=economic)
 

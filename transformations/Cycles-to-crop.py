@@ -72,5 +72,6 @@ csv_file = 'yieldelast.csv'
 
 with open(csv_file,'w',newline='') as csvfile:
     yieldwriter = csv.writer(csvfile, delimiter=',')
+    yieldwriter.writerow(['','yieldN'])
     yieldwriter.writerow(['sorghum',el])
 

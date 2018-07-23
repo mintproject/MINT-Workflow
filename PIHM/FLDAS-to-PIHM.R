@@ -384,10 +384,15 @@ fun.vegtable <- function (lc, file){
 }
 
 
+#### main ###################################################################
+
+args = commandArgs(trailingOnly=TRUE)
+
 wdir = 'FLDAS_NOAH01_A_EA_D.001/'
 fl=read.csv('PIHM-base/GISdata/Forcing/FLDAS_grids.csv')
 
-years=2017
+years <- seq(from = args[1], to = args[2])
+message(years)
 dirs = file.path(wdir, years)
 
 ndir = length(dirs)

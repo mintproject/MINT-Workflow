@@ -33,7 +33,7 @@ def main():
     pihm_infil_fname = "PIHM-state/ga.infil"
 
     # TODO: parameter?
-    cycles_reinit_fname = "Cycles-%s.REINIT" %(sys.argv[1])
+    cycles_reinit_fname = "Cycles-%s-%s.REINIT" %(sys.argv[1], sys.argv[2])
 
     # PIHM state comes in as a tarball
     subprocess.call('tar xzf PIHM-state.tar.gz', shell=True)

@@ -77,50 +77,54 @@ crops_output =  File('yieldelast.csv')
 cycles_to_crop.uses(crops_output, link=Link.OUTPUT, transfer=True)
 dax.addJob(cycles_to_crop)
 
-# we need two cycles run - one base line and one 10% increase in fertilization
+# we need two scenarios cycles runs - one base line and one 10% increase in fertilization
 for point in ['baseline', '10_percent_inc']:
 
-    # cycles config
-    cycles_config = File('mint_cycles-' + str(point) + '.config')
-    cycles_config.addPFN(PFN('file://' + top_dir + '/Cycles/mint_cycles.config', 'local'))
-    dax.addFile(cycles_config)
+    # then for each crop
+    for crop in ['Corn', 'Peanut', 'Sorghum']:
 
-    # transformation: LDAS->Cycles
-    ldas_cycles = Job('FLDAS-Cycles-transformation.py')
-    ldas_cycles.uses(run_config, link=Link.INPUT)
-    ldas_cycles.uses(cycles_config, link=Link.INPUT)
-    ldas_cycles.uses(weather_data, link=Link.INPUT)
-    cycles_weather = File('Cycles-%s.weather' %(point))
-    ldas_cycles.uses(cycles_weather, link=Link.OUTPUT, transfer=True)
-    ldas_cycles.addArguments(point)
-    dax.addJob(ldas_cycles)
-    dax.depends(parent=ldas, child=ldas_cycles)
+        # cycles config
+        cycles_config = File('mint_cycles-' + crop + '-' + point + '.config')
+        cycles_config.addPFN(PFN('file://' + top_dir + '/Cycles/mint_cycles.config', 'local'))
+        dax.addFile(cycles_config)
     
-    # transformation: PIHM->Cycles
-    pihm_cycles = Job('PIHM-Cycles-transformation.py')
-    pihm_cycles.uses(run_config, link=Link.INPUT)
-    pihm_cycles.uses(pihm_state, link=Link.INPUT)
-    cycles_reinit = File('Cycles-%s.REINIT' %(point))
-    pihm_cycles.uses(cycles_reinit, link=Link.OUTPUT, transfer=True)
-    pihm_cycles.addArguments(point)
-    dax.addJob(pihm_cycles)
-    dax.depends(parent=pihm, child=pihm_cycles)
-
-    # create a job to execute Cycles
-    cycles = Job('Cycles-wrapper.sh')
-    cycles.uses(cycles_weather, link=Link.INPUT)
-    cycles.uses(cycles_reinit, link=Link.INPUT)
-    cycles_outputs = File('Cycles-%s-results.tar.gz' %(point))
-    cycles.uses(cycles_outputs, link=Link.OUTPUT, transfer=True)
-    cycles.addArguments(point)
-    dax.addJob(cycles)
-    dax.depends(parent=ldas_cycles, child=cycles)
-    dax.depends(parent=pihm_cycles, child=cycles)
-
-    # update cycles_to_crop job
-    dax.depends(parent=cycles, child=cycles_to_crop)
-    cycles_to_crop.uses(cycles_outputs, link=Link.INPUT)
-    cycles_to_crop.addArguments(cycles_outputs)
+        # transformation: LDAS->Cycles
+        ldas_cycles = Job('FLDAS-Cycles-transformation.py')
+        ldas_cycles.uses(run_config, link=Link.INPUT)
+        ldas_cycles.uses(cycles_config, link=Link.INPUT)
+        ldas_cycles.uses(weather_data, link=Link.INPUT)
+        cycles_weather = File('Cycles-%s-%s.weather' %(crop, point))
+        ldas_cycles.uses(cycles_weather, link=Link.OUTPUT, transfer=True)
+        ldas_cycles.addArguments(crop, point)
+        dax.addJob(ldas_cycles)
+        dax.depends(parent=ldas, child=ldas_cycles)
+        
+        # transformation: PIHM->Cycles
+        pihm_cycles = Job('PIHM-Cycles-transformation.py')
+        pihm_cycles.uses(run_config, link=Link.INPUT)
+        pihm_cycles.uses(pihm_state, link=Link.INPUT)
+        cycles_reinit = File('Cycles-%s-%s.REINIT' %(crop, point))
+        pihm_cycles.uses(cycles_reinit, link=Link.OUTPUT, transfer=True)
+        pihm_cycles.addArguments(crop, point)
+        dax.addJob(pihm_cycles)
+        dax.depends(parent=pihm, child=pihm_cycles)
+    
+        # create a job to execute Cycles
+        cycles = Job('Cycles-wrapper.py')
+        cycles.uses(run_config, link=Link.INPUT)
+        cycles.uses(cycles_weather, link=Link.INPUT)
+        cycles.uses(cycles_reinit, link=Link.INPUT)
+        cycles_outputs = File('Cycles-%s-%s-results.tar.gz' %(crop, point))
+        cycles.uses(cycles_outputs, link=Link.OUTPUT, transfer=True)
+        cycles.addArguments(run_config, crop, point)
+        dax.addJob(cycles)
+        dax.depends(parent=ldas_cycles, child=cycles)
+        dax.depends(parent=pihm_cycles, child=cycles)
+    
+        # update cycles_to_crop job
+        dax.depends(parent=cycles, child=cycles_to_crop)
+        cycles_to_crop.uses(cycles_outputs, link=Link.INPUT)
+        cycles_to_crop.addArguments(cycles_outputs)
 
 # economic model gams file
 crop_production = File('cropproduction.gms')

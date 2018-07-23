@@ -38,11 +38,11 @@ tr PIHM-wrapper.py {
     }
 }
 
-tr Cycles-wrapper.sh {
+tr Cycles-wrapper.py {
     site condor_pool {
         type "STAGEABLE"
         container "Cycles_Docker"
-        pfn "file://$PWD/Cycles/Cycles-wrapper.sh"
+        pfn "file://$PWD/Cycles/Cycles-wrapper.py"
     }
 }
 

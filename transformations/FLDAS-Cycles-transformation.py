@@ -94,7 +94,7 @@ def process_day(dt, y, x):
 def main():
 
     # unique name is argv[1]
-    unique_name = sys.argv[1]
+    unique_name = sys.argv[1] + '-' + sys.argv[2]
 
     # weater input is a tarball
     if subprocess.call('tar xzf weather.tar.gz', shell=True) != 0:

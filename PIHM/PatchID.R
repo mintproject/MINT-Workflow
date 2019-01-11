@@ -27,6 +27,7 @@ ll = coordinates(x.gcs)
 
 DF$X_c = ll[,1]
 DF$Y_c = ll[,2]
+DF$SP_ID = as.numeric(DF$SP_ID)
 
 DF = subset(DF, LC == ilc)
 
